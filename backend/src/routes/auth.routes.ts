@@ -18,7 +18,7 @@ router.post(
     const { username, password } = req.body;
 
     try {
-      // Recherche de l'utilisateur
+      
       const user = await User.findOne({ where: { username } });
 
       if (!user) {
