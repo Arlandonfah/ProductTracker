@@ -1,4 +1,10 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from "typeorm";
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  ManyToOne,
+  CreateDateColumn,
+} from "typeorm";
 import { Product } from "./product.model";
 
 @Entity()
@@ -12,8 +18,11 @@ export class Review {
   @Column({ type: "text", nullable: true })
   comment: string;
 
-  @Column({ type: "timestamp", default: () => "CURRENT_TIMESTAMP" })
+  @CreateDateColumn()
   createdAt: Date;
+
+  @Column()
+  userId: number; // ID de l'utilisateur qui a posté l'avis
 
   @ManyToOne(() => Product, (product) => product.reviews)
   product: Product;
