@@ -10,8 +10,6 @@ import { authenticate, authorizeAdmin } from "./middlewares/auth.middleware";
 // Charger les variables d'environnement
 dotenv.config();
 
-app.use("/api/reviews", reviewRoutes);
-
 const app = express();
 
 // Middlewares de base
@@ -27,6 +25,8 @@ app.use("/api/products", authenticate, productRoutes);
 
 // Routes admin protégées
 app.use("/admin/products", authenticate, authorizeAdmin, productRoutes);
+
+app.use("/api/reviews", reviewRoutes);
 
 // Middleware pour les routes non trouvées
 app.use(notFoundHandler);
