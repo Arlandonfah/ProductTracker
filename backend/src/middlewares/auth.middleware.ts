@@ -7,6 +7,14 @@ interface JwtPayload {
   role: string;
 }
 
+// Interface étendue pour Request avec la propriété user
+interface AuthenticatedRequest extends Request {
+  user?: {
+    id: number;
+    role: string;
+  };
+}
+
 // Middleware d'authentification
 export const authenticate = (
   req: Request,
@@ -30,8 +38,8 @@ export const authenticate = (
       process.env.JWT_SECRET || "votre_secret_par_defaut"
     ) as JwtPayload;
 
-    // Ajouter les informations utilisateur à la requête
-    req.user = {
+    // Ajouter les informations utilisateur à la requête avec le bon typage
+    (req as AuthenticatedRequest).user = {
       id: decoded.userId,
       role: decoded.role,
     };
@@ -61,7 +69,9 @@ export const authorizeAdmin = (
   res: Response,
   next: NextFunction
 ) => {
-  if (!req.user || req.user.role !== "admin") {
+  const authenticatedReq = req as AuthenticatedRequest;
+
+  if (!authenticatedReq.user || authenticatedReq.user.role !== "admin") {
     return res.status(403).json({
       error: "Accès refusé. Autorisation administrateur requise.",
     });
