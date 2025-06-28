@@ -9,7 +9,7 @@ const productRepository = AppDataSource.getRepository(Product);
 export const addReview = async (req: Request, res: Response) => {
   try {
     const { productId, rating, comment } = req.body;
-    const userId = req.user.id; // Récupéré du middleware d'authentification
+    const userId = (req as any).user.id; // Récupéré du middleware d'authentification
 
     // Vérifier si le produit existe
     const product = await productRepository.findOneBy({
