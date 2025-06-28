@@ -56,7 +56,7 @@ app.use("/api/products", productRoutes);
 app.use("/api/reviews", reviewRoutes);
 
 // Route de santé
-app.get("/health", (req, res) => {
+app.get("/health", (_, res) => {
   res.status(200).json({ status: "OK", timestamp: new Date() });
 });
 
