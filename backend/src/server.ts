@@ -36,7 +36,8 @@ process.on("uncaughtException", (error) => {
   process.exit(1);
 });
 
-process.on("unhandledRejection", (reason, promise) => {
+// Correction : remplacement de 'promise' par '_'
+process.on("unhandledRejection", (reason, _) => {
   logger.error("Rejet de promesse non géré:", reason);
   process.exit(1);
 });
