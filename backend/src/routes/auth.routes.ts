@@ -3,17 +3,19 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { body } from "express-validator";
 import { validateRequest } from "../middlewares/validation.middleware";
-import User from "../models/user.model";
+import { User } from "../models/user.model";
 
 const router = Router();
 
+// Correction : Création du middleware de validation séparément
+const loginValidation = validateRequest([
+  body("username").trim().notEmpty().withMessage("Nom d'utilisateur requis"),
+  body("password").notEmpty().withMessage("Mot de passe requis"),
+]);
+
 router.post(
   "/login",
-  [
-    body("username").trim().notEmpty().withMessage("Nom d'utilisateur requis"),
-    body("password").notEmpty().withMessage("Mot de passe requis"),
-  ],
-  validateRequest,
+  loginValidation, // Utilisation du middleware créé
   async (req, res) => {
     const { username, password } = req.body;
 

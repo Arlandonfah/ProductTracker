@@ -3,6 +3,9 @@ import bcrypt from "bcrypt";
 
 @Entity()
 export class User {
+  static findOne(arg0: { where: { username: any; }; }) {
+    throw new Error("Method not implemented.");
+  }
   @PrimaryGeneratedColumn()
   id: number;
 
