@@ -25,19 +25,17 @@ const productValidation = [
 // Routes publiques
 router.get(
   '/',
-  [
+  validateRequest([ 
     param('page').optional().isInt({ gt: 0 }).withMessage('Numéro de page invalide')
-  ],
-  validateRequest,
+  ]),
   getProducts
 );
 
 router.get(
   '/:id',
-  [
+  validateRequest([ 
     param('id').isInt().withMessage('ID produit invalide')
-  ],
-  validateRequest,
+  ]),
   getProductById
 );
 
@@ -47,8 +45,7 @@ router.post(
   authenticate,
   authorizeAdmin,
   upload.single('image'),
-  productValidation,
-  validateRequest,
+  validateRequest(productValidation), 
   createProduct
 );
 
@@ -57,11 +54,10 @@ router.put(
   authenticate,
   authorizeAdmin,
   upload.single('image'),
-  [
+  validateRequest([ 
     param('id').isInt().withMessage('ID produit invalide'),
     ...productValidation
-  ],
-  validateRequest,
+  ]),
   updateProduct
 );
 
@@ -69,10 +65,9 @@ router.delete(
   '/:id',
   authenticate,
   authorizeAdmin,
-  [
+  validateRequest([ 
     param('id').isInt().withMessage('ID produit invalide')
-  ],
-  validateRequest,
+  ]),
   deleteProduct
 );
 

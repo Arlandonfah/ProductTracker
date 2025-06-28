@@ -1,6 +1,5 @@
-import { Request, Response, NextFunction } from "express";
+import { Request, Response, NextFunction, RequestHandler } from "express";
 import { validationResult, ValidationChain } from "express-validator";
-import { RequestHandler } from "express";
 
 export const validateRequest = (
   validations: ValidationChain[]
@@ -10,7 +9,8 @@ export const validateRequest = (
 
     const errors = validationResult(req);
     if (errors.isEmpty()) {
-      return next();
+      next();
+      return;
     }
 
     res.status(400).json({

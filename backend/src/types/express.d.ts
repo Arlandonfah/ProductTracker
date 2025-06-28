@@ -1,12 +1,15 @@
-import { User } from "../entities/user.entity";
-
+import { User } from "../models/user";
 declare global {
   namespace Express {
     interface Request {
-      user?: {
-        id: number;
-        role: string;
-      };
+      user?: User;
     }
   }
+}
+
+export interface AuthenticatedRequest extends Request {
+  user: {
+    id: number;
+    role: string;
+  };
 }

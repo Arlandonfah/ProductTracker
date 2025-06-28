@@ -2,27 +2,40 @@ import { Request, Response } from "express";
 import { Review } from "../models/review.model";
 import { Product } from "../models/product.model";
 import { AppDataSource } from "../data-source";
+//import { AuthenticatedRequest } from "../types/express";
 
 const reviewRepository = AppDataSource.getRepository(Review);
 const productRepository = AppDataSource.getRepository(Product);
 
+interface AddReviewBody {
+  productId: string;
+  rating: number;
+  comment?: string;
+}
+
 export const addReview = async (req: Request, res: Response) => {
   try {
-    const { productId, rating, comment } = req.body;
-    const userId = (req as any).user.id; // Récupéré du middleware d'authentification
+    const body = req.body as unknown as AddReviewBody;
+    const { productId, rating, comment } = body;
 
-    // Vérifier si le produit existe
+    if (!req.user) {
+      res.status(401).json({ error: "Authentification requise" });
+      return;
+    }
+
+    const userId = req.user.id;
+
     const product = await productRepository.findOneBy({
       id: parseInt(productId),
     });
     if (!product) {
-      return res.status(404).json({ error: "Produit non trouvé" });
+      res.status(404).json({ error: "Produit non trouvé" });
+      return;
     }
 
-    // Créer le nouvel avis
     const review = new Review();
     review.rating = rating;
-    review.comment = comment;
+    review.comment = comment || "";
     review.product = product;
     review.userId = userId;
 
@@ -40,26 +53,24 @@ export const addReview = async (req: Request, res: Response) => {
   }
 };
 
+// Ajout des fonctions manquantes qui étaient utilisées dans les routes
 export const getProductReviews = async (req: Request, res: Response) => {
   try {
     const productId = parseInt(req.params.id);
-    const { sort = "newest", search = "" } = req.query;
+    const sort = (req.query.sort as string) || "newest";
+    const search = (req.query.search as string) || "";
 
-    // Vérifier si le produit existe
-    const productExists = await productRepository.exist({
-      where: { id: productId },
-    });
-    if (!productExists) {
-      return res.status(404).json({ error: "Produit non trouvé" });
+    const product = await productRepository.findOneBy({ id: productId });
+    if (!product) {
+      res.status(404).json({ error: "Produit non trouvé" });
+      return;
     }
 
-    // Construire la requête avec les filtres
     const query = reviewRepository
       .createQueryBuilder("review")
       .where("review.productId = :productId", { productId })
       .andWhere("review.comment ILIKE :search", { search: `%${search}%` });
 
-    // Appliquer le tri
     if (sort === "highest") {
       query.orderBy("review.rating", "DESC");
     } else if (sort === "lowest") {
@@ -89,15 +100,12 @@ export const getRatingDistribution = async (req: Request, res: Response) => {
   try {
     const productId = parseInt(req.params.id);
 
-    // Vérifier si le produit existe
-    const productExists = await productRepository.exist({
-      where: { id: productId },
-    });
-    if (!productExists) {
-      return res.status(404).json({ error: "Produit non trouvé" });
+    const product = await productRepository.findOneBy({ id: productId });
+    if (!product) {
+      res.status(404).json({ error: "Produit non trouvé" });
+      return;
     }
 
-    // Récupérer la distribution des notes
     const result = await reviewRepository
       .createQueryBuilder("review")
       .select("review.rating", "rating")
@@ -107,23 +115,19 @@ export const getRatingDistribution = async (req: Request, res: Response) => {
       .orderBy("review.rating")
       .getRawMany();
 
-    // Formater les résultats pour inclure toutes les notes possibles
-    const distribution = Array(5)
-      .fill(0)
-      .map((_, i) => {
-        const rating = i + 1;
-        const ratingData = result.find((r) => r.rating === rating);
-        return {
-          rating,
-          count: ratingData ? parseInt(ratingData.count) : 0,
-        };
-      });
+    const distribution = [1, 2, 3, 4, 5].map((rating) => {
+      const ratingData = result.find((r) => parseInt(r.rating) === rating);
+      return {
+        rating,
+        count: ratingData ? parseInt(ratingData.count) : 0,
+      };
+    });
 
     res.json(distribution);
   } catch (error) {
     console.error("Erreur lors de la récupération de la distribution:", error);
-    res
-      .status(500)
-      .json({ error: "Erreur lors de la récupération de la distribution" });
+    res.status(500).json({
+      error: "Erreur lors de la récupération de la distribution",
+    });
   }
 };

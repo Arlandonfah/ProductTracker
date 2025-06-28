@@ -15,8 +15,8 @@ export class Review {
   @Column({ type: "int" })
   rating: number; // 1-5
 
-  @Column({ type: "text", nullable: true })
-  comment: string;
+  @Column({ type: "text", nullable: true }) 
+  comment: string | null;
 
   @CreateDateColumn()
   createdAt: Date;
