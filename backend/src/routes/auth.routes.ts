@@ -1,9 +1,10 @@
-import { Router } from "express";
+import { Router, Request, Response } from "express"; 
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { body } from "express-validator";
 import { validateRequest } from "../middlewares/validation.middleware";
 import { User } from "../models/user.model";
+import { AppDataSource } from "../data-source"; 
 
 const router = Router();
 
@@ -15,12 +16,15 @@ const loginValidation = validateRequest([
 
 router.post(
   "/login",
-  loginValidation, // Utilisation du middleware créé
-  async (req, res) => {
+  loginValidation,
+  // Correction du typage pour le handler
+  async (req: Request, res: Response) => {
     const { username, password } = req.body;
 
     try {
-      const user = await User.findOne({ where: { username } });
+      // Correction : Utilisation du repository pour accéder à findOne
+      const userRepository = AppDataSource.getRepository(User);
+      const user = await userRepository.findOne({ where: { username } });
 
       if (!user) {
         return res.status(401).json({ error: "Identifiants invalides" });
@@ -40,10 +44,12 @@ router.post(
         { expiresIn: "1h" }
       );
 
-      res.json({ token });
+      // Correction : Ajout du return pour le type de retour
+      return res.json({ token });
     } catch (error) {
       console.error("Erreur de connexion:", error);
-      res.status(500).json({ error: "Erreur de serveur" });
+      // Correction : Ajout du return
+      return res.status(500).json({ error: "Erreur de serveur" });
     }
   }
 );
