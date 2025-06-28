@@ -36,16 +36,23 @@ const consoleFormat = winston.format.combine(
   )
 );
 
+// Correction : Utilisation d'une fonction explicite pour gérer le spread
 const fileFormat = winston.format.combine(
   winston.format.timestamp({ format: "YYYY-MM-DD HH:mm:ss:ms" }),
-  winston.format.printf((info) =>
-    JSON.stringify({
+  winston.format.printf((info) => {
+    const logEntry: Record<string, any> = {
       timestamp: info.timestamp,
       level: info.level,
-      message: info.message,
-      ...(info.stack && { stack: info.stack }),
-    })
-  )
+      message: info.message
+    };
+    
+    // Ajout conditionnel de la stack trace
+    if (info.stack) {
+      logEntry.stack = info.stack;
+    }
+    
+    return JSON.stringify(logEntry);
+  })
 );
 
 // Transports (sorties)
