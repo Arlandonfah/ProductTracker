@@ -1,11 +1,8 @@
 import { Request, Response, NextFunction } from "express";
-import {
-  validationResult,
-  ValidationChain,
-  ValidationError,
-} from "express-validator";
+import { validationResult, ValidationChain } from "express-validator";
+import { RequestHandler } from "express"; // Ajout de l'import
 
-export const validateRequest = (validations: ValidationChain[]) => {
+export const validateRequest = (validations: ValidationChain[]): RequestHandler => {
   return async (req: Request, res: Response, next: NextFunction) => {
     await Promise.all(validations.map((validation) => validation.run(req)));
 
@@ -15,8 +12,8 @@ export const validateRequest = (validations: ValidationChain[]) => {
     }
 
     res.status(400).json({
-      errors: errors.array().map((err: ValidationError) => ({
-        field: (err as any).path || (err as any).param, // Correction ici
+      errors: errors.array().map((err) => ({
+        field: (err as any).path || (err as any).param, // Compatibilité multi-versions
         message: err.msg,
       })),
     });
