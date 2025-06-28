@@ -17,7 +17,6 @@ export const getProducts = async (req: Request, res: Response) => {
       relations: ["reviews"],
     });
 
-    // Calcul de la note moyenne pour chaque produit
     const productsWithAvgRating = products.map((product) => {
       const ratings = product.reviews?.map((r) => r.rating) || [];
       const avgRating =
@@ -54,10 +53,10 @@ export const getProductById = async (req: Request, res: Response) => {
     });
 
     if (!product) {
-      return res.status(404).json({ error: "Produit non trouvé" });
+      res.status(404).json({ error: "Produit non trouvé" });
+      return; // Ajout d'un return pour sortir de la fonction
     }
 
-    // Calcul de la note moyenne
     const ratings = product.reviews?.map((r) => r.rating) || [];
     const avgRating =
       ratings.length > 0
@@ -79,9 +78,9 @@ export const createProduct = async (req: Request, res: Response) => {
   try {
     const { title, description, price } = req.body;
 
-    // Vérifier si un fichier a été uploadé
     if (!req.file) {
-      return res.status(400).json({ error: "Image du produit requise" });
+      res.status(400).json({ error: "Image du produit requise" });
+      return; // Ajout d'un return pour sortir de la fonction
     }
 
     const imageUrl = await imageUpload(req.file);
@@ -106,10 +105,10 @@ export const updateProduct = async (req: Request, res: Response) => {
 
     const product = await productRepository.findOneBy({ id: productId });
     if (!product) {
-      return res.status(404).json({ error: "Produit non trouvé" });
+      res.status(404).json({ error: "Produit non trouvé" });
+      return; // Ajout d'un return pour sortir de la fonction
     }
 
-    // Mise à jour des champs
     product.title = title || product.title;
     product.description = description || product.description;
 
@@ -117,7 +116,6 @@ export const updateProduct = async (req: Request, res: Response) => {
       product.price = parseFloat(price);
     }
 
-    // Mise à jour de l'image si fournie
     if (req.file) {
       product.imageUrl = await imageUpload(req.file);
     }
@@ -135,11 +133,12 @@ export const deleteProduct = async (req: Request, res: Response) => {
     const product = await productRepository.findOneBy({ id: productId });
 
     if (!product) {
-      return res.status(404).json({ error: "Produit non trouvé" });
+      res.status(404).json({ error: "Produit non trouvé" });
+      return; // Ajout d'un return pour sortir de la fonction
     }
 
     await productRepository.remove(product);
-    res.status(204).send();
+    res.status(204).end(); // Utilisation de .end() au lieu de .send()
   } catch (error) {
     res.status(500).json({ error: "Erreur lors de la suppression du produit" });
   }
