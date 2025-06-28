@@ -23,7 +23,7 @@ services:
   backend:
     build:
       context: ./backend
-      dockerfile: Dockerfile
+      dockerfile: ./backend/Dockerfile
     container_name: products_backend
     environment:
       DB_HOST: db
@@ -45,7 +45,7 @@ services:
   frontend:
     build:
       context: ./frontend
-      dockerfile: Dockerfile
+      dockerfile: ./frontend/Dockerfile
     container_name: products_frontend
     environment:
       REACT_APP_API_BASE_URL: http://backend:5000/api
