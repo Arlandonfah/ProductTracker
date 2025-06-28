@@ -1,7 +1,6 @@
 version: "3.8"
 
 services:
-  # Base de données
   db:
     image: postgres:14
     container_name: products_db
@@ -19,11 +18,10 @@ services:
       timeout: 5s
       retries: 5
 
-  # Backend
   backend:
     build:
       context: ./backend
-      dockerfile: ./backend/Dockerfile
+      dockerfile: Dockerfile
     container_name: products_backend
     environment:
       DB_HOST: db
@@ -41,11 +39,10 @@ services:
       db:
         condition: service_healthy
 
-  # Frontend
   frontend:
     build:
       context: ./frontend
-      dockerfile: ./frontend/Dockerfile
+      dockerfile: Dockerfile
     container_name: products_frontend
     environment:
       REACT_APP_API_BASE_URL: http://backend:5000/api
