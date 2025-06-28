@@ -1,19 +1,18 @@
 import multer from "multer";
 import path from "path";
-import { Request } from "express";
 
 const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
+  destination: (_, __, cb) => {
     cb(null, "uploads/");
   },
-  filename: (req, file, cb) => {
+  filename: (_, file, cb) => {
     cb(null, `${Date.now()}-${file.originalname}`);
   },
 });
 
 export const upload = multer({
   storage,
-  fileFilter: (req: Request, file, cb) => {
+  fileFilter: (_, file, cb) => {
     const ext = path.extname(file.originalname);
     if (![".jpg", ".jpeg", ".png"].includes(ext.toLowerCase())) {
       return cb(new Error("Seules les images sont autorisées"));
