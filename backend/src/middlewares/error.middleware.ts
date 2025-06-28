@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction } from "express";
+import { Request, Response } from "express";
 import { ValidationError } from "express-validator";
 import { MulterError } from "multer";
 
@@ -12,9 +12,9 @@ interface AppError extends Error {
 export const errorHandler = (
   err: AppError | MulterError | any,
   req: Request,
-  res: Response,
-  next: NextFunction
+  res: Response
 ) => {
+  // 1. Removed unused 'next' parameter
   const statusCode = err.statusCode || (err instanceof MulterError ? 400 : 500);
 
   // Messages d'erreur par défaut
@@ -27,8 +27,9 @@ export const errorHandler = (
     details = { field: err.field, code: err.code };
   } else if (err.name === "ValidationError") {
     message = "Erreur de validation des données";
+    // 2. Correction pour ValidationError sans 'param'
     details = err.errors?.map((e: ValidationError) => ({
-      field: e.param,
+      field: (e as any).path || (e as any).param, // Utilisation de 'path' ou 'param'
       message: e.msg,
     }));
   } else if (
@@ -43,8 +44,9 @@ export const errorHandler = (
   } else if (err.errors && Array.isArray(err.errors)) {
     // Erreurs de validation express-validator
     message = "Données d'entrée invalides";
+    // 3. Correction pour ValidationError sans 'param'
     details = err.errors.map((e: ValidationError) => ({
-      field: e.param,
+      field: (e as any).path || (e as any).param, // Utilisation de 'path' ou 'param'
       message: e.msg,
     }));
   } else if (typeof err === "string") {
