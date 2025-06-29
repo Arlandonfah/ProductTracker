@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import ProductForm from '../components/ProductForm';
-import ProductList from '../components/ProductList';
-import AuthModal from '../components/AuthModal';
-import { useApi } from '../hooks/useApi';
+import React, { useState, useEffect } from "react";
+import ProductForm from "../components/ProductForm";
+import ProductList from "../components/ProductList";
+import AuthModal from "../components/AuthModal";
+import { useApi } from "../hooks/useApi";
 
 interface Product {
   id: number;
@@ -18,18 +18,18 @@ const AdminPage = () => {
   const [showForm, setShowForm] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  
-  const { 
-    data: products, 
-    callApi: fetchProducts 
-  } = useApi<{ data: Product[]; meta: { total: number; last_page: number } }>();
-  
+
+  const { data: products, callApi: fetchProducts } = useApi<{
+    data: Product[];
+    meta: { total: number; last_page: number };
+  }>();
+
   const { callApi: deleteProduct } = useApi();
   const { login, loading: authLoading } = useAdminAuth();
 
   // Vérifier l'authentification au montage
   useEffect(() => {
-    const token = localStorage.getItem('adminToken');
+    const token = localStorage.getItem("adminToken");
     if (token) {
       setIsAuthenticated(true);
       setShowAuthModal(false);
@@ -48,7 +48,7 @@ const AdminPage = () => {
   const handleLogin = async (username: string, password: string) => {
     const result = await login(username, password);
     if (result?.token) {
-      localStorage.setItem('adminToken', result.token);
+      localStorage.setItem("adminToken", result.token);
       setIsAuthenticated(true);
       setShowAuthModal(false);
       loadProducts(1);
@@ -56,8 +56,8 @@ const AdminPage = () => {
   };
 
   const handleDelete = async (id: number) => {
-    if (window.confirm('Êtes-vous sûr de vouloir supprimer ce produit?')) {
-      await deleteProduct(`/products/${id}`, { method: 'DELETE' });
+    if (window.confirm("Êtes-vous sûr de vouloir supprimer ce produit?")) {
+      await deleteProduct(`/products/${id}`, { method: "DELETE" });
       loadProducts(currentPage); // Rafraîchir la liste
     }
   };
@@ -68,7 +68,7 @@ const AdminPage = () => {
 
   const handleSelectProduct = (product: Product) => {
     // Implémentez cette fonction si nécessaire
-    console.log('Produit sélectionné:', product);
+    console.log("Produit sélectionné:", product);
   };
 
   if (!isAuthenticated) {
@@ -90,24 +90,24 @@ const AdminPage = () => {
           onClick={() => setShowForm(!showForm)}
           className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
         >
-          {showForm ? 'Annuler' : 'Ajouter un Produit'}
+          {showForm ? "Annuler" : "Ajouter un Produit"}
         </button>
       </div>
 
       {showForm && (
         <div className="mb-12">
-          <ProductForm 
+          <ProductForm
             onSuccess={() => {
               setShowForm(false);
               loadProducts(currentPage);
-            }} 
+            }}
           />
         </div>
       )}
 
       {products && (
-        <ProductList 
-          products={products.data || []} 
+        <ProductList
+          products={products.data || []}
           adminMode={true}
           onDelete={handleDelete}
           currentPage={currentPage}
@@ -124,9 +124,9 @@ const useAdminAuth = () => {
   const { callApi, ...state } = useApi<{ token: string }>();
 
   const login = async (username: string, password: string) => {
-    return callApi('/auth/login', {
-      method: 'POST',
-      body: { username, password }
+    return callApi("/api/auth/login", {
+      method: "POST",
+      body: { username, password },
     });
   };
 
