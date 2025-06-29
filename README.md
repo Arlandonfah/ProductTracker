@@ -1,4 +1,4 @@
-# 🚀 Product Review Tracker - Application Fullstack
+# 🚀 ProductTracker - Application Fullstack
 
 Application web complète pour le suivi de produits et la gestion d'avis avec analyse de données.
 
