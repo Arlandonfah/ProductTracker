@@ -24,10 +24,7 @@ services:
       - product-network
 
   backend:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
-
+    build: ./backend
     container_name: products_backend
     environment:
       DB_HOST: db
@@ -48,10 +45,7 @@ services:
       - product-network
 
   frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
-
+    build: ./frontend
     container_name: products_frontend
     environment:
       REACT_APP_API_BASE_URL: http://backend:5000
