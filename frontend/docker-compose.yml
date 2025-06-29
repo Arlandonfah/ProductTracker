@@ -24,7 +24,7 @@ services:
       - product-network
 
   backend:
-    build: ./backend
+    image: products_backend
     container_name: products_backend
     environment:
       DB_HOST: db
@@ -45,7 +45,7 @@ services:
       - product-network
 
   frontend:
-    build: ./frontend
+    image: products_frontend
     container_name: products_frontend
     environment:
       REACT_APP_API_BASE_URL: http://backend:5000
@@ -53,6 +53,8 @@ services:
       - "3000:80"
     depends_on:
       - backend
+    networks:
+      - product-network
 
 volumes:
   pgdata:
