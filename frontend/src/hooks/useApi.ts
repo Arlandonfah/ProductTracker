@@ -71,7 +71,7 @@ export const useAdminAuth = () => {
   const { callApi, ...state } = useApi<{ token: string }>();
 
   const login = async (username: string, password: string) => {
-    return callApi("/api/auth/login", {
+    return callApi("/auth/login", {
       method: "POST",
       body: { username, password },
     });
