@@ -13,7 +13,7 @@ Application web complète pour le suivi de produits et la gestion d'avis avec an
 ### Backend
 
 - **Runtime**: Node.js/ExpressJS
-- **ORM**: Sequelize ou TypeORM (au choix)
+- **ORM**: TypeORM
 - **Cache**: Redis (pour requêtes API)
 
 ### Base de Données
