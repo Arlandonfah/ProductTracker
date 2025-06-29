@@ -13,6 +13,7 @@ interface Product {
 }
 
 const AdminPage = () => {
+  
   const [showAuthModal, setShowAuthModal] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [showForm, setShowForm] = useState(false);
