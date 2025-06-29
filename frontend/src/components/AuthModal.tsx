@@ -4,6 +4,7 @@ interface AuthModalProps {
   show: boolean;
   onLogin: (username: string, password: string) => void;
   loading: boolean;
+  error: string | null;
   onClose: () => void;
 }
 
