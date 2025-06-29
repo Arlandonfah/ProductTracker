@@ -3,7 +3,7 @@ import { useState, useCallback } from "react";
 interface ApiRequestOptions {
   method?: "GET" | "POST" | "PUT" | "DELETE";
   headers?: Record<string, string>;
-  body?: unknown; // Modifié de BodyInit à unknown
+  body?: unknown;
 }
 
 interface ApiState<T> {
@@ -26,25 +26,45 @@ export const useApi = <T>() => {
       try {
         const baseUrl =
           process.env.REACT_APP_API_BASE_URL || "http://localhost:5000";
-        const fullUrl = `${baseUrl}/api${url}`;
+        const fullUrl = `${baseUrl}${url}`;
+
+        // Get token from localStorage
+        const token = localStorage.getItem("adminToken");
+
+        const headers: Record<string, string> = {
+          "Content-Type": "application/json",
+          ...options.headers,
+        };
+
+        // Add Authorization header if token exists
+        if (token) {
+          headers["Authorization"] = `Bearer ${token}`;
+        }
 
         const body = options.body ? JSON.stringify(options.body) : null;
 
         const response = await fetch(fullUrl, {
           method: options.method || "GET",
-          headers: {
-            "Content-Type": "application/json",
-            ...options.headers,
-          },
+          headers,
           body,
-          credentials: "include",
         });
 
         if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(
-            errorData.error || `HTTP error! status: ${response.status}`
-          );
+          // Handle 401 errors
+          if (response.status === 401) {
+            localStorage.removeItem("adminToken");
+            window.location.href = "/admin";
+          }
+
+          let errorMessage = `HTTP error! status: ${response.status}`;
+          try {
+            const errorData = await response.json();
+            errorMessage = errorData.error || errorData.message || errorMessage;
+          } catch {
+            // If response is not JSON, use default error message
+          }
+
+          throw new Error(errorMessage);
         }
 
         const data: T = await response.json();
@@ -71,10 +91,17 @@ export const useAdminAuth = () => {
   const { callApi, ...state } = useApi<{ token: string }>();
 
   const login = async (username: string, password: string) => {
-    return callApi("/auth/login", {
+    const result = await callApi("/api/auth/login", {
       method: "POST",
       body: { username, password },
     });
+
+    // Store the token if login is successful
+    if (result && result.token) {
+      localStorage.setItem("adminToken", result.token);
+    }
+
+    return result;
   };
 
   return { login, ...state };
