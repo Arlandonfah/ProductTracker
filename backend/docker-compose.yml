@@ -17,6 +17,8 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+    networks:
+      - product-network
 
   backend:
     build:
@@ -38,6 +40,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
+    networks:
+      - product-network
 
   frontend:
     build:
@@ -53,3 +57,7 @@ services:
 
 volumes:
   pgdata:
+
+networks:
+  product-network:
+    driver: bridge
