@@ -10,6 +10,8 @@ services:
       POSTGRES_DB: products
       POSTGRES_HOST_AUTH_METHOD: trust
       POSTGRES_INITDB_ARGS: "--auth-host=scram-sha-256"
+      POSTGRES_INIT_DB_ARGS: "-E UTF8 --locale=C.UTF-8"
+      POSTGRES_MULTIPLE_DATABASES: products
     volumes:
       - pgdata:/var/lib/postgresql/data
       - ./db-scripts:/docker-entrypoint-initdb.d

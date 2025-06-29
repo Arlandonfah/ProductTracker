@@ -1,0 +1,3 @@
+CREATE USER admin WITH PASSWORD 'password';
+CREATE DATABASE products;
+GRANT ALL PRIVILEGES ON DATABASE products TO admin;
