@@ -9,7 +9,7 @@ dotenv.config();
 
 export const AppDataSource = new DataSource({
   type: "postgres",
-  host: process.env.DB_HOST || "localhost",
+  host: process.env.DB_HOST || "db",
   port: parseInt(process.env.DB_PORT || "5432"),
   username: process.env.DB_USER || "admin",
   password: process.env.DB_PASSWORD || "password",
@@ -20,3 +20,15 @@ export const AppDataSource = new DataSource({
   migrations: [],
   subscribers: [],
 });
+
+// Fonction d'initialisation
+export const initializeDB = async () => {
+  try {
+    await AppDataSource.initialize();
+    console.log("Database connected successfully");
+    return true;
+  } catch (error) {
+    console.error("Database connection error:", error);
+    return false;
+  }
+};
