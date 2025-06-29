@@ -12,20 +12,23 @@ import rateLimit from "express-rate-limit";
 
 const app = express();
 
-// Middlewares de sécurité
+// Middleware de sécurité HTTP
 app.use(helmet());
+
+// Configuration CORS
 app.use(
   cors({
-    origin: process.env.CORS_ORIGIN || "*",
+    origin: "http://localhost:3000", // autorise uniquement le frontend
     methods: ["GET", "POST", "PUT", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"],
+    credentials: true, // permet les cookies et headers sécurisés
   })
 );
 
 // Compression des réponses
 app.use(compression());
 
-// Logging des requêtes
+// Logging des requêtes HTTP
 app.use(
   morgan("combined", {
     stream: {
@@ -37,20 +40,19 @@ app.use(
 // Limitation du taux de requêtes
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // Limite chaque IP à 100 requêtes par fenêtre
+  max: 100,
   standardHeaders: true,
   legacyHeaders: false,
   message:
     "Trop de requêtes depuis cette adresse IP, veuillez réessayer plus tard",
 });
-
 app.use(limiter);
 
-// Traitement des requêtes JSON
+// Traitement du corps des requêtes
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Routes API
+// Routes principales
 app.use("/api/auth", authRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/reviews", reviewRoutes);
@@ -60,10 +62,10 @@ app.get("/health", (_, res) => {
   res.status(200).json({ status: "OK", timestamp: new Date() });
 });
 
-// Middleware pour les routes non trouvées
+// Middleware pour route non trouvée
 app.use(notFoundHandler);
 
-// Middleware centralisé de gestion d'erreurs
+// Middleware global de gestion d’erreur
 app.use(errorHandler);
 
 export default app;
