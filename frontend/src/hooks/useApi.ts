@@ -4,11 +4,17 @@ interface ApiRequestOptions {
   method?: "GET" | "POST" | "PUT" | "DELETE";
   headers?: Record<string, string>;
   body?: unknown;
+  tokenName?: string;
 }
 
 interface ApiState<T> {
   data: T | null;
   loading: boolean;
+  error: string | null;
+}
+
+interface ApiResponse<T> {
+  data: T | null;
   error: string | null;
 }
 
@@ -20,61 +26,73 @@ export const useApi = <T>() => {
   });
 
   const callApi = useCallback(
-    async (url: string, options: ApiRequestOptions = {}): Promise<T | null> => {
+    async (
+      url: string,
+      options: ApiRequestOptions = {}
+    ): Promise<ApiResponse<T>> => {
       setApiState((prev) => ({ ...prev, loading: true, error: null }));
 
       try {
         const baseUrl =
           process.env.REACT_APP_API_BASE_URL || "http://localhost:5000";
-        const fullUrl = `${baseUrl}${url}`;
+        const apiPrefix = process.env.REACT_APP_API_PREFIX || "";
 
-        // Get token from localStorage
-        const token = localStorage.getItem("adminToken");
+        // Construction robuste de l'URL
+        const normalizedUrl = url.startsWith("/") ? url : `/${url}`;
+        const fullUrl = `${baseUrl}${apiPrefix}${normalizedUrl}`;
+
+        // Gestion flexible du token
+        const tokenName = options.tokenName || "authToken";
+        const token = localStorage.getItem(tokenName);
 
         const headers: Record<string, string> = {
           "Content-Type": "application/json",
-          ...options.headers,
+          ...(options.headers || {}),
         };
 
-        // Add Authorization header if token exists
         if (token) {
           headers["Authorization"] = `Bearer ${token}`;
         }
 
-        const body = options.body ? JSON.stringify(options.body) : null;
-
         const response = await fetch(fullUrl, {
           method: options.method || "GET",
           headers,
-          body,
+          body: options.body ? JSON.stringify(options.body) : undefined,
         });
 
         if (!response.ok) {
-          // Handle 401 errors
+          // Gestion des erreurs 401 (non autorisé)
           if (response.status === 401) {
-            localStorage.removeItem("adminToken");
-            window.location.href = "/admin";
+            localStorage.removeItem(tokenName);
+
+            // Éviter la boucle de redirection si on est déjà sur /admin
+            if (!window.location.pathname.includes("/admin")) {
+              window.location.href = "/admin";
+            }
+
+            throw new Error("Session expirée. Veuillez vous reconnecter.");
           }
 
-          let errorMessage = `HTTP error! status: ${response.status}`;
+          let errorMessage = `Erreur HTTP: ${response.status}`;
           try {
             const errorData = await response.json();
-            errorMessage = errorData.error || errorData.message || errorMessage;
-          } catch {
-            // If response is not JSON, use default error message
+            errorMessage = errorData.message || errorData.error || errorMessage;
+          } catch (e) {
+            // Ignorer si la réponse n'est pas du JSON
           }
-
           throw new Error(errorMessage);
         }
 
         const data: T = await response.json();
         setApiState({ data, loading: false, error: null });
-        return data;
+        return { data, error: null };
       } catch (error) {
         const message =
-          error instanceof Error ? error.message : "Erreur inconnue";
+          error instanceof Error
+            ? error.message
+            : "Une erreur inconnue est survenue";
         setApiState({ data: null, loading: false, error: message });
-        return null;
+        return { data: null, error: message };
       }
     },
     []
@@ -87,21 +105,25 @@ export const useApi = <T>() => {
   };
 };
 
+interface AuthResponse {
+  token: string;
+}
+
 export const useAdminAuth = () => {
-  const { callApi, ...state } = useApi<{ token: string }>();
+  const { callApi, ...state } = useApi<AuthResponse>();
 
   const login = async (username: string, password: string) => {
-    const result = await callApi("/api/auth/login", {
+    const { data, error } = await callApi("/auth/login", {
       method: "POST",
       body: { username, password },
+      tokenName: "adminToken",
     });
 
-    // Store the token if login is successful
-    if (result && result.token) {
-      localStorage.setItem("adminToken", result.token);
+    if (data && data.token) {
+      localStorage.setItem("adminToken", data.token);
     }
 
-    return result;
+    return { data, error };
   };
 
   return { login, ...state };

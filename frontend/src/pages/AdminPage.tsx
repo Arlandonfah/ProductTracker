@@ -12,19 +12,20 @@ interface Product {
   imageUrl: string;
 }
 
+interface ProductListResponse {
+  data: Product[];
+  meta: { total: number; last_page: number };
+}
+
 const AdminPage = () => {
-  
   const [showAuthModal, setShowAuthModal] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
-  const { data: products, callApi: fetchProducts } = useApi<{
-    data: Product[];
-    meta: { total: number; last_page: number };
-  }>();
-
+  // Utilisation de useApi pour les produits
+  const { callApi: fetchProducts } = useApi<ProductListResponse>();
   const { callApi: deleteProduct } = useApi();
   const { login, loading: authLoading, error: authError } = useAdminAuth();
 
@@ -39,15 +40,23 @@ const AdminPage = () => {
   }, []);
 
   const loadProducts = async (page: number) => {
-    const response = await fetchProducts(`/api/products?page=${page}`);
+    const { data: response, error } = await fetchProducts(
+      `products?page=${page}`,
+      {
+        tokenName: "adminToken",
+      }
+    );
+
     if (response) {
       setCurrentPage(page);
       setTotalPages(response.meta.last_page);
+    } else if (error) {
+      console.error("Erreur lors du chargement des produits:", error);
     }
   };
 
   const handleLogin = async (username: string, password: string) => {
-    const result = await login(username, password);
+    const { data: result, error } = await login(username, password);
     if (result?.token) {
       setIsAuthenticated(true);
       setShowAuthModal(false);
@@ -57,11 +66,15 @@ const AdminPage = () => {
 
   const handleDelete = async (id: number) => {
     if (window.confirm("Êtes-vous sûr de vouloir supprimer ce produit?")) {
-      const result = await deleteProduct(`/api/products/${id}`, {
+      const { error } = await deleteProduct(`products/${id}`, {
         method: "DELETE",
+        tokenName: "adminToken",
       });
-      if (result !== null) {
+
+      if (!error) {
         loadProducts(currentPage); // Rafraîchir la liste
+      } else {
+        console.error("Erreur lors de la suppression:", error);
       }
     }
   };
@@ -124,17 +137,15 @@ const AdminPage = () => {
         </div>
       )}
 
-      {products && (
-        <ProductList
-          products={products.data || []}
-          adminMode={true}
-          onDelete={handleDelete}
-          currentPage={currentPage}
-          totalPages={totalPages}
-          onPageChange={handlePageChange}
-          onSelectProduct={handleSelectProduct}
-        />
-      )}
+      <ProductList
+        products={[]}
+        adminMode={true}
+        onDelete={handleDelete}
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={handlePageChange}
+        onSelectProduct={handleSelectProduct}
+      />
     </div>
   );
 };
