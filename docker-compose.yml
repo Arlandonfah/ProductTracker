@@ -36,6 +36,7 @@ services:
       UPLOAD_DIR: /app/uploads
     volumes:
       - ./backend/uploads:/app/uploads
+      - /app/node_modules
     ports:
       - "5000:5000"
     depends_on:
@@ -49,6 +50,7 @@ services:
     container_name: products_frontend
     environment:
       REACT_APP_API_BASE_URL: http://backend:5000
+      REACT_APP_API_PREFIX: /api # Nouvelle variable ajoutée
     ports:
       - "3000:80"
     depends_on:
