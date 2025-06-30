@@ -1,8 +1,3 @@
--- ./db-scripts/init.sql
--- Ce script sera exécuté automatiquement au démarrage du conteneur PostgreSQL
-
--- L'utilisateur 'admin' et la base 'products' sont déjà créés par les variables d'environnement
--- Mais nous devons nous assurer que l'utilisateur a les bonnes permissions
 
 -- Se connecter à la base de données products
 \c products;
