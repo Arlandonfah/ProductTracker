@@ -41,3 +41,12 @@ DB_PASSWORD=password
 JWT_SECRET=mysecretkey
 PORT=5000
 ```
+## Lancement de l'applicatio
+
+1- docker-compose up
+
+## TestAdministrateur
+
+nom d'utilisateur: admin
+mdp: password
+
