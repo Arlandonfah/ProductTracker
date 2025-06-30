@@ -53,6 +53,8 @@ services:
       REACT_APP_API_PREFIX: /api # Nouvelle variable ajoutée
     ports:
       - "3000:80"
+    volumes:
+      - ./frontend/nginx.conf:/etc/nginx/conf.d/app.conf:ro
     depends_on:
       - backend
     networks:
